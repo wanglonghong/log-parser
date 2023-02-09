@@ -1,0 +1,20 @@
+{
+  "dependencies": {
+    "@types/node": "^18.13.0",
+    "ethers": "^6.0.2",
+    "ts-node": "10.9.1",
+    "typescript": "^4.9.5"
+  },
+  "scripts": {
+    "build": "tsc --build ./tsconfig.json",
+    "run:parse": "ts-node ./src/index.ts"
+  },
+  "name": "log-parser",
+  "version": "0.0.1",
+  "description": "Event parser for EVM transactions",
+  "main": "index.js",
+  "repository": "https://github.com/wanglonghong/log-parser.git",
+  "author": "wanglonghong",
+  "license": "MIT",
+  "private": true
+}
