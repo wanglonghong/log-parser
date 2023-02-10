@@ -30,3 +30,5 @@ ops/data
 **/*/config.*.json
 **/*/config.json
 *.csv
+
+metadata.json

@@ -77,7 +77,7 @@ const main = async () => {
     const path = "metadata.json";
     if (existsSync(path)) {
       json = readFileSync(path, { encoding: "utf-8" });
-      readCount = JSON.parse(json).metadata;
+      readCount = JSON.parse(json).readCount;
     }
   } catch (e: unknown) {
     console.error("Error reading metadata file");
@@ -91,13 +91,13 @@ const main = async () => {
     // If you handle lots of calls in parallel against public rpcs, it could throw due to its limited rate.
     // It would be fine to process rpc calls step by step as of now
     for (let idx = readCount; idx < totalCount; idx++) {
-      readCount++;
       // 2023-02-06 05:40:56.016399,42161,0x32c2631d5bc88e78105edf7543158689720d2f4de969b79b946f16c83e629e21,0x64e54a6a771267b35a40dc14cf80921a6afb05990d086186b2d2f9c591087d92,296903,$0.30
       const line = lines[idx];
       const items = line.split(",");
       const flattenEvtNames = await parseLogs(rpcProviders[items[1]], items[2]);
       const newLine = `${readCount},${line},${flattenEvtNames}\n`;
       dataLogger.write(newLine);
+      readCount++;
     }
   } catch (e: unknown) {
     console.log("Unknow error: ", e);
