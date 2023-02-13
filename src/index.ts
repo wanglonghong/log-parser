@@ -15,6 +15,16 @@ const rootManagerInterface = new Interface(RootManagerABI);
 const uniswapV2SubgraphEndpoint = "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2";
 const uniswapGraphQLClient = new GraphQLClient(uniswapV2SubgraphEndpoint);
 
+const defaultChainConfigs = {
+  "1": { rpc: "https://cloudflare-eth.com", mainnetEquivalent: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", stable: false },
+  "10": { rpc: "https://mainnet.optimism.io", mainnetEquivalent: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", stable: false },
+  "56": { rpc: "https://bsc-dataseed2.ninicoin.io", mainnetEquivalent: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52", stable: false },
+  "100": { rpc: "https://rpc.gnosischain.com", mainnetEquivalent: "0x6B175474E89094C44Da98b954EedeAC495271d0F", stable: true },
+  "137": { rpc: "https://polygon.llamarpc.com", mainnetEquivalent: "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0", stable: false },
+  "42161": { rpc: "https://endpoints.omniatech.io/v1/arbitrum/one/public", mainnetEquivalent: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", stable: false },
+};
+
+
 // curl -X POST -H "Origin: https://pancakeswap.finance" -d '{"query" : " query tokenPriceData { bundle (id: \"1\", block: {number: 25634027}) { bnbPrice }}"}' https://proxy-worker.pancake-swap.workers.dev/bsc-exchange
 const getBNBPrice = async (blockNumber: number): Promise<number> => {
   try {
@@ -51,14 +61,6 @@ const getTokenPrice = async (chainId: number, mainnetEquivalent: string, timesta
   return tokenPrice;
 };
 
-const defaultChainConfigs = {
-  "1": { rpc: "https://cloudflare-eth.com", mainnetEquivalent: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", stable: false },
-  "10": { rpc: "https://mainnet.optimism.io", mainnetEquivalent: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", stable: false },
-  "56": { rpc: "https://bsc-dataseed2.ninicoin.io", mainnetEquivalent: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52", stable: false },
-  "100": { rpc: "https://rpc.gnosischain.com", mainnetEquivalent: "0x6B175474E89094C44Da98b954EedeAC495271d0F", stable: true },
-  "137": { rpc: "https://polygon.llamarpc.com", mainnetEquivalent: "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0", stable: false },
-  "42161": { rpc: "https://endpoints.omniatech.io/v1/arbitrum/one/public", mainnetEquivalent: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", stable: false },
-};
 
 const getTransferInfo = async (
   eventNames: string,
@@ -103,11 +105,7 @@ const parseLogs = async (
 }> => {
   const { rpc, mainnetEquivalent, stable } = chainInfo;
   const provider = new JsonRpcProvider(rpc);
-  //   console.log("> before receipt: ");
-  //   await provider.getT
-  //   const tmpReceipt = await provider.getTransaction(txHash);
   const receipt = await provider.getTransactionReceipt(txHash);
-  //  console.log("> after receipt: ");
   console.log(receipt);
   const gasUsed = receipt.gasUsed.toString();
   const gasPrice = receipt.gasPrice.toString();
@@ -220,6 +218,7 @@ const main = async () => {
       readCount++;
     } catch (e: unknown) {
       console.log(`Unknown error. chainId: ${items[1]}, txHash: ${items[2]}`);
+      console.log("message: ", (e as any).message);
       console.log(e);
 
       process.exit(1);
