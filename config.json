@@ -1,8 +1,0 @@
-{
-    "1": "https://cloudflare-eth.com",
-    "10": "https://mainnet.optimism.io",
-    "56": "https://bsc-dataseed2.ninicoin.io",
-    "100": "https://rpc.gnosischain.com",
-    "137": "https://polygon.llamarpc.com",
-    "42161": "https://endpoints.omniatech.io/v1/arbitrum/one/public"
-}
