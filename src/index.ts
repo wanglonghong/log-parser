@@ -24,7 +24,6 @@ const defaultChainConfigs = {
   "42161": { rpc: "https://endpoints.omniatech.io/v1/arbitrum/one/public", mainnetEquivalent: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", stable: false },
 };
 
-
 // curl -X POST -H "Origin: https://pancakeswap.finance" -d '{"query" : " query tokenPriceData { bundle (id: \"1\", block: {number: 25634027}) { bnbPrice }}"}' https://proxy-worker.pancake-swap.workers.dev/bsc-exchange
 const getBNBPrice = async (blockNumber: number): Promise<number> => {
   try {
@@ -61,7 +60,6 @@ const getTokenPrice = async (chainId: number, mainnetEquivalent: string, timesta
   return tokenPrice;
 };
 
-
 const getTransferInfo = async (
   eventNames: string,
   executeTxHash: string
@@ -85,6 +83,25 @@ const getTransferInfo = async (
   }
 };
 
+const getl1TxInfo = async (chainId: number, l2TxHash: string): Promise<{ l1Fee: string }> => {
+  if (chainId !== 10) throw new Error("Only supported optimism txs");
+
+  const url = defaultChainConfigs[chainId.toString()].rpc;
+  const data = {
+    jsonrpc: "2.0",
+    method: "eth_getTransactionReceipt",
+    params: [`${l2TxHash}`],
+    id: 1,
+  };
+  // "l1Fee":"0x1720834bb33830","l1FeeScalar":"1","l1GasPrice":"0x1f8809c6cc","l1GasUsed":"0xbbc4"
+  // l1Fee: 6509672747186224
+  // l1FeeScalar: 1
+  // l1GasPrice: 135426328268
+  // l1GasUsed: 48068
+  const res = await axios.post(url, data);
+  const { l1Fee, l1FeeScalar } = res.data.result;
+  return { l1Fee: (toBigInt(l1Fee) * toBigInt(l1FeeScalar)).toString() };
+};
 // Returns all the event names from the `txHash`
 const parseLogs = async (
   chainId: number,
@@ -105,6 +122,8 @@ const parseLogs = async (
 }> => {
   const { rpc, mainnetEquivalent, stable } = chainInfo;
   const provider = new JsonRpcProvider(rpc);
+  console.log(await provider.getTransaction(txHash));
+
   const receipt = await provider.getTransactionReceipt(txHash);
   console.log(receipt);
   const gasUsed = receipt.gasUsed.toString();
@@ -138,8 +157,13 @@ const parseLogs = async (
 
   const tokenPrice = await getTokenPrice(chainId, mainnetEquivalent, timestamp, receipt.blockNumber);
 
-  const feeInUsd = formatEther((receipt.gasUsed * receipt.gasPrice * toBigInt(Math.floor(tokenPrice * 1000))) / toBigInt(1000));
-  const feeInEth = (receipt.gasUsed * receipt.gasPrice).toString();
+  let feeInEth = (receipt.gasUsed * receipt.gasPrice).toString();
+  if (chainId === 10) {
+    const { l1Fee } = await getl1TxInfo(chainId, txHash);
+    feeInEth = (toBigInt(feeInEth) + toBigInt(l1Fee)).toString();
+  }
+  const feeInUsd = formatEther((toBigInt(feeInEth) * toBigInt(Math.floor(tokenPrice * 1000))) / toBigInt(1000));
+
   const transferInfo = await getTransferInfo(eventNames, txHash);
   console.log({ timestamp, gasUsed, gasPrice, tokenPrice, feeInUsd, feeInEth, transferInfo });
 
@@ -149,7 +173,7 @@ const parseLogs = async (
 const main = async () => {
   const chainId = process.argv[2];
   const filename = process.argv[3];
-  console.log({chainId, filename});
+  console.log({ chainId, filename });
   if (!chainId) {
     console.log("Missing chainId");
   }
