@@ -28,11 +28,11 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Get Environment Variable
-        run: echo "The value of MY_ENV_VAR is ${{ needs.set_env_var.output.my_env_var }}"
+        run: echo "The value of MY_ENV_VAR is ${{ needs.set_env_var.outputs.my_env_var }}"
 
       - name: Use Environment Variable in Another Step
         run: |
-          if [[ "${{ needs.set_env_var.output.my_env_var }}" == "HelloWorld" ]]; then
+          if [[ "${{ needs.set_env_var.outputs.my_env_var }}" == "HelloWorld" ]]; then
             echo "The environment variable is correctly set!"
           else
             echo "The environment variable is not set correctly."
