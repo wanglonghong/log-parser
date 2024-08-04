@@ -23,5 +23,3 @@ jobs:
           else
             echo "The environment variable is not set correctly."
           fi
-      - name: Print All Environment Variables
-        run: printenv
