@@ -13,7 +13,7 @@ jobs:
       - name: Set Environment Variable
         id: set-env
         run: |
-          echo "MY_ENV_VAR=HelloWorld" >> $GITHUB_ENV
+          echo "MY_ENV_VAR=HelloWorld" >> $GITHUB_OUTPUT
     outputs:
       my_env_var: ${{ steps.set-env.outputs.MY_ENV_VAR }}
 
