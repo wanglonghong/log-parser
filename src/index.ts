@@ -1,4 +1,5 @@
-import { formatEther, Interface, JsonRpcProvider, toBigInt } from "ethers";
+import { ethers, formatEther, Interface, JsonRpcProvider, toBigInt } from "ethers";
+
 import { createWriteStream, existsSync, readFileSync } from "fs";
 import ConnextABI from "./abis/Connext.json";
 import SpokeConnectorABI from "./abis/SpokeConnector.json";
@@ -122,10 +123,8 @@ const parseLogs = async (
 }> => {
   const { rpc, mainnetEquivalent, stable } = chainInfo;
   const provider = new JsonRpcProvider(rpc);
-  console.log(await provider.getTransaction(txHash));
-
   const receipt = await provider.getTransactionReceipt(txHash);
-  console.log(receipt);
+  // console.log(receipt);
   const gasUsed = receipt.gasUsed.toString();
   const gasPrice = receipt.gasPrice.toString();
 
@@ -152,7 +151,7 @@ const parseLogs = async (
       }
     }
   }
-  console.log({ rpc, txHash, parsedLogs, flattenParsedLogs });
+  // console.log({ rpc, txHash, parsedLogs, flattenParsedLogs });
   const eventNames = flattenParsedLogs.length > 0 ? flattenParsedLogs : "NoEvents";
 
   const tokenPrice = await getTokenPrice(chainId, mainnetEquivalent, timestamp, receipt.blockNumber);
@@ -165,7 +164,7 @@ const parseLogs = async (
   const feeInUsd = formatEther((toBigInt(feeInEth) * toBigInt(Math.floor(tokenPrice * 1000))) / toBigInt(1000));
 
   const transferInfo = await getTransferInfo(eventNames, txHash);
-  console.log({ timestamp, gasUsed, gasPrice, tokenPrice, feeInUsd, feeInEth, transferInfo });
+  // console.log({ timestamp, gasUsed, gasPrice, tokenPrice, feeInUsd, feeInEth, transferInfo });
 
   return { evtNames: eventNames, gasUsed, gasPrice, ethPrice: tokenPrice.toFixed(3), feeInEth, feeInUsd, ...transferInfo };
 };
@@ -254,4 +253,22 @@ const main = async () => {
   console.log(`app end`);
 };
 
-main();
+const getTopics = () => {
+  const transferTopic = ethers.id("Transfer(address,address,uint256)");
+  const mintTopic = ethers.id("Mint(address,uint256,uint256,address)");
+  const burnTopic = ethers.id("Burn(address,uint256,uint256,address,address)");
+  const swapTopic = ethers.id("Swap(address,uint256,uint256,uint256,uint256,address)");
+  const syncTopic = ethers.id("Sync(uint112,uint112)");
+  const createPairTopic = ethers.id("PairCreated(address,address,address,uint256)");
+
+  const aggregateRootProposedTopic = ethers.id("AggregateRootProposed(uint256,uint256,bytes32,bytes32,bytes32[],uint32[])");
+  const aggregateRootSavedOptimisticTopic = ethers.id("AggregateRootSavedOptimistic(bytes32,uint256)");
+
+  const aggregateRootProposedTopicOnSpoke = ethers.id("AggregateRootProposed(bytes32,uint256,uint256,uint32)");
+  const aggregateRootFinalizedTopicOnSpoke = ethers.id("ProposedRootFinalized(bytes32)");
+  
+  console.log({ aggregateRootProposedTopic, aggregateRootSavedOptimisticTopic, aggregateRootProposedTopicOnSpoke, aggregateRootFinalizedTopicOnSpoke})
+}
+
+// main();
+getTopics();

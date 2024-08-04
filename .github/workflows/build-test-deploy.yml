@@ -1,0 +1,27 @@
+name: Example Workflow
+
+on: [push]
+
+jobs:
+  example_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Environment Variable
+        run: |
+          echo "MY_ENV_VAR=HelloWorld" >> $GITHUB_ENV
+
+      - name: Get Environment Variable
+        run: echo "The value of MY_ENV_VAR is ${{ env.MY_ENV_VAR }}"
+
+      - name: Use Environment Variable in Another Step
+        run: |
+          if [[ "${{ env.MY_ENV_VAR }}" == "HelloWorld" ]]; then
+            echo "The environment variable is correctly set!"
+          else
+            echo "The environment variable is not set correctly."
+          fi
+      - name: Print All Environment Variables
+        run: printenv

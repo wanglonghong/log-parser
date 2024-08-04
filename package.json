@@ -12,6 +12,7 @@
   "scripts": {
     "build": "tsc --build ./tsconfig.json",
     "run:parse": "ts-node ./src/index.ts",
+    "run:parse:spokeconnector": "ts-node ./src/spokeconnector.ts",
     "run:trim": "ts-node ./src/trim.ts",
     "run:reset": "rm ./analytics.csv ./metadata.json",
     "prettier": "prettier --write src"
